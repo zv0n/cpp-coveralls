@@ -73,8 +73,6 @@ def run():
         # use environment COVERALLS_REPO_TOKEN as a fallback
         args.repo_token = os.environ.get('COVERALLS_REPO_TOKEN')
 
-    args.service_name = yml.get('service_name', 'travis-ci')
-
     if not args.gcov_options:
         args.gcov_options = yml.get('gcov_options', '')
     if not args.root:
@@ -86,7 +84,11 @@ def run():
     args.include.extend(yml.get('include', []))
     args.exclude_lines_pattern.extend(yml.get('exclude_lines_pattern', []))
 
+    args.service_name = yml.get('service_name', 'travis-ci')
     args.service_job_id = os.environ.get('TRAVIS_JOB_ID', '')
+    if args.service_job_id == '' and os.environment.get('CI_JOB_ID', '') != '':
+        args.service_name = yml.get('service_name', 'GitLab CI')
+        args.service_job_id = os.environ.get('CI_JOB_ID', '')
 
     if args.repo_token == '' and args.service_job_id == '':
         raise ValueError("\nno coveralls.io token specified and no travis job id found\n"
